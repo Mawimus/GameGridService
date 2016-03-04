@@ -1,0 +1,16 @@
+{
+  "name": "gamegridservice",
+  "version": "0.1.0",
+  "description": "WS GameGrid",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.13.4",
+    "mongoose": "^4.4.6"
+  }
+}
