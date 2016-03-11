@@ -1,35 +1,166 @@
 var express = require('express');
 var mongoose = require('mongoose');
+var randomizeGrid = require('./app/Core/Utils/randomizeGrid');
+var utils = require('./app/Core/Utils/utils');
+var beautify = require('js-beautify').js_beautify;
+var fs = require('fs');
 var app = express();
 
-mongoose.connect('mongodb://localhost/gamegride');
 
-var db = mongoose.connection;
-db.on('error', console.error.bind(console, 'connection error:'));
-db.once('open', function() {
 
-	// Tile Schema
-	var Schema = mongoose.Schema;
-	var TileSchema = new Schema({
-		coord: {
-			x: Number,
-			y: Number
-		},
-		owner: {
-			type: String,
-			name: String,
-			class: String
-		},
-		field: {
-			type: String
-		}
+function getLocalMatrixTiles(maxx, maxy, currentx, currenty) {
+	// Cast des parametre
+	var maxx = parseInt(maxx),
+		maxy = parseInt(maxy),
+		currentx = parseInt(currentx),
+		currenty = parseInt(currenty);
+
+	console.log('current x/y %s / %s', currentx, currenty);
+
+	// Work with nbX, nbY odd !
+	var gridSeed = 'totojojolerigolo',
+		randField = [],
+		randbarbarian = [],
+		nbX = (32*2)+1,
+		nbY = nbX,
+		fromX = Math.floor(nbX / 2) * -1,
+		toX = Math.floor(nbX / 2),
+		fromY = fromX,
+		toY = toX;
+
+	console.log('X from %s to %s', fromX, toX);
+	console.log('Y from %s to %s', fromY, toY);
+
+	randField = randomizeGrid.generateLocalWithSeed(gridSeed, maxx, maxy, currentx + 32, currenty + 32, {
+		mountain:0.2,
+		forest:0.2,
+		desert:0.2,
+		sea:0.1,
+		lowland:0.3,
 	});
+	randbarbarian = randomizeGrid.generateLocalWithSeed(gridSeed, maxx, maxy, currentx + 32, currenty + 32, {
+		nature:0.95,
+		barbarian:0.05,
+	});
+	// for (i in randbarbarian) {
+	// 	console.log('i %s', randbarbarian[i]);
+	// }
 
-	// Tile Model
-	var model = mongoose.model;
-	var Tile = model('Tile', TileSchema);
+	var mountain = 0,
+		forest = 0,
+		desert = 0,
+		sea = 0,
+		lowland = 0
+		totalField = 0;
 
-});
+	var nature = 0,
+		barbarian = 0,
+		totalBarbarian = 0;
+
+	var mountainpc,
+		forestpc,
+		desertpc,
+		seapc,
+		lowlandpc,
+		totalFieldpc,
+		naturepc,
+		barbarianpc,
+		totalBarbarianpc;
+
+	for (var i in randField) {
+		if (randField[i] == 'mountain') mountain++;
+		if (randField[i] == 'forest') forest++;
+		if (randField[i] == 'desert') desert++;
+		if (randField[i] == 'sea') sea++;
+		if (randField[i] == 'lowland') lowland++;
+		totalField++;
+	}
+	mountainpc = (mountain * 100) / totalField;
+	forestpc = (forest * 100) / totalField;
+	desertpc = (desert * 100) / totalField;
+	seapc = (sea * 100) / totalField;
+	lowlandpc = (lowland * 100) / totalField;
+	totalFieldpc = (totalField * 100) / totalField;
+
+	console.log('Type\t\t\t: Total\t%percent');
+	console.log('----------------------------------------');
+
+	console.log('mountain\t\t: %s\t%s%', mountain, mountainpc.toFixed(2));
+	console.log('forest\t\t\t: %s\t%s%', forest, forestpc.toFixed(2));
+	console.log('desert\t\t\t: %s\t%s%', desert, desertpc.toFixed(2));
+	console.log('sea\t\t\t: %s\t%s%', sea, seapc.toFixed(2));
+	console.log('lowland\t\t\t: %s\t%s%', lowland, lowlandpc.toFixed(2));
+	console.log('#totalField#\t\t: %s\t%s%', totalField, totalFieldpc.toFixed(2));
+
+	for (var i in randbarbarian) {
+		if (randbarbarian[i] == 'nature') nature++;
+		if (randbarbarian[i] == 'barbarian') barbarian++;
+		totalBarbarian++;
+	}
+	naturepc = (nature * 100) / totalBarbarian;
+	barbarianpc = (barbarian * 100) / totalBarbarian;
+	totalBarbarianpc = (totalBarbarian * 100) / totalBarbarian;
+
+	console.log();
+	console.log('nature\t\t\t: %s\t%s%', nature, naturepc.toFixed(2));
+	console.log('barbarian\t\t: %s\t%s%', barbarian, barbarianpc.toFixed(2));
+	console.log('#totalBarbarian#\t: %s\t%s%', totalBarbarian, totalBarbarianpc.toFixed(2));
+
+	var matrix = [[]],
+		id, f, b, c,
+		tabi = 0,
+		ipos = 0,
+		jpos = 0;
+
+	// for (var j = fromY; j < toY+1; j++) {
+	// 	matrix[jpos] = [];
+	// 	matrix[jpos] = new Array(nbX);
+	// 	for (var i = fromX; i < toX+1; i++) {
+	// 		id = tabi; //j.toString() + i.toString();
+	// 		f = {type: randField[tabi]};
+	// 		b = {id: 0, type: randbarbarian[tabi], name: randbarbarian[tabi].capitalizeFirstLetter(), class: randbarbarian[tabi]};
+	// 		c = {x: j, y: i};
+	// 		matrix[jpos][ipos] = {id: id, coord: c, owner: b, field: f};
+	// 		ipos++;
+	// 		tabi++;
+	// 	}
+	// 	ipos = 0;
+	// 	jpos++;
+	// }
+
+	for (var j = currenty; j < maxy + currenty; j++) {
+		matrix[jpos] = [];
+		matrix[jpos] = new Array(nbX);
+		for (var i = currentx; i < maxx + currentx; i++) {
+			id = tabi; //j.toString() + i.toString();
+			f = {type: randField[tabi]};
+			b = {id: 0, type: randbarbarian[tabi], name: randbarbarian[tabi].capitalizeFirstLetter(), class: randbarbarian[tabi]};
+			c = {x: j, y: i};
+			matrix[jpos][ipos] = {id: id, coord: c, owner: b, field: f};
+			ipos++;
+			tabi++;
+		}
+		ipos = 0;
+		jpos++;
+	}
+
+	console.log(beautify(JSON.stringify(matrix), {indent_size: 2}));
+	return matrix;
+}
+
+
+// mongoose.connect('mongodb://localhost/gamegride');
+
+// var db = mongoose.connection;
+// db.on('error', console.error.bind(console, 'connection error:'));
+// db.once('open', function() {
+
+
+// });
+
+
+
+
 
 
 
@@ -42,111 +173,17 @@ app.get('/users', function(req, res) {
 	]);
 });
 
-app.get('/user/:id', function(req, res) {
-	res.send({id:req.params.id, name:'Mawimus', class:'roman'});
-});
-
 app.get('/matrix-tiles/:maxx/:maxy/:x/:y', function(req, res) {
 
 	var maxx, maxy, x, y;
+	var matrixTiles = [[]];
 	maxx = req.params.maxx;
 	maxy = req.params.maxy;
-	x = req.params.x;
-	y = req.params.y;
+	currentx = req.params.x;
+	currenty = req.params.y;
 
-	// format des tuiles :
-	/*
-		{
-			id:number,
-			coord:object {
-				x:number,
-				y:number
-			},
-			owner:object {
-				id:number,
-				type:string,
-				name:string,
-				class:string
-			},
-			field:object {
-				type:string
-			},
-			movement:object {
-				in:list<object> [
-					{
-						id:number,
-						from:object {
-							id:number,
-							coord:object {
-								x:number,
-								y:number
-							},
-							owner:object {
-								id:number,
-								type:string,
-								name:string,
-								class:string
-							},
-						},
-						departureDate:datetime,
-						eta:datetime,
-						speed:number,
-						troops:list<object> [
-							{
-								id:number,
-								quantity:number
-								unit:object {
-									id:number,
-									type:string,
-									name:string,
-									maxspeed:number
-								},
-								items:list<object> [
-									{
-										id:number,
-										name:string
-									}
-								]
-							}
-						],
-					}
-				],
-				out:list [
-					id:number,
-					to:object {
-						id:number,
-						coord:object {
-							x:number,
-							y:number
-						},
-						owner:object {
-							id:number,
-							type:string,
-							name:string,
-							class:string
-						},
-					},
-					departureDate:datetime,
-					eta:datetime,
-					speed:number,
-					troops:list<object> [
-						{
-							id:number,
-							quantity:number
-							unit:string
-							items:list<object> [
-								{
-									id:number,
-									name:string
-								}
-							]
-						}
-					],
-				]
-			}
-		}
-	*/
-	var matrixTiles = [
+	matrixTiles = getLocalMatrixTiles(maxx, maxy, currentx, currenty);
+	/*matrixTiles = [
 		[
 			{id:11, coord: {x:0, y:0}, owner: {id:1, type:'player', name:'Mawimus', class:'roman'}, field: {type:'mountain'}},
 			{id:21, coord: {x:1, y:0}, owner: {id:0, type:'nature', name:'Nature', class:'nature'}, field: {type:'forest'}},
@@ -182,10 +219,12 @@ app.get('/matrix-tiles/:maxx/:maxy/:x/:y', function(req, res) {
 			{id:45, coord: {x:3, y:4}, owner: {id:0, type:'nature', name:'Nature', class:'nature'}, field: {type:'desert'}},
 			{id:55, coord: {x:4, y:4}, owner: {id:2, type:'enemy',  name:'Ququ', class:'gallic'}, field: {type:'desert'}},
 		],
-	];
+	];*/
 
 	res.json({matrixTiles});
 });
 
-app.listen(3000);
-console.log('Listening on port 3000');
+app.listen(3000, function() {
+	console.log();
+	console.log('Listening on port 3000');
+});
