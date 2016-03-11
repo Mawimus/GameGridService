@@ -108,9 +108,9 @@ function getLocalMatrixTiles(maxx, maxy, currentx, currenty) {
 
 	var matrix = [[]],
 		id, f, b, c,
-		tabi = 0,
-		ipos = 0,
-		jpos = 0;
+		ipos = 0, //currentx+32,
+		jpos = 0, //currenty+32,
+		tabi = 0;
 
 	// for (var j = fromY; j < toY+1; j++) {
 	// 	matrix[jpos] = [];
@@ -128,10 +128,13 @@ function getLocalMatrixTiles(maxx, maxy, currentx, currenty) {
 	// 	jpos++;
 	// }
 
-	for (var j = currenty; j < maxy + currenty; j++) {
+	for (var j = 0; j < maxy; j++) {
 		matrix[jpos] = [];
 		matrix[jpos] = new Array(nbX);
-		for (var i = currentx; i < maxx + currentx; i++) {
+		for (var i = 0; i < maxx; i++) {
+			// console.log('j %s', jpos);
+			// console.log('i %s', ipos);
+			// console.log('tabi %s', tabi);
 			id = tabi; //j.toString() + i.toString();
 			f = {type: randField[tabi]};
 			b = {id: 0, type: randbarbarian[tabi], name: randbarbarian[tabi].capitalizeFirstLetter(), class: randbarbarian[tabi]};
@@ -140,11 +143,12 @@ function getLocalMatrixTiles(maxx, maxy, currentx, currenty) {
 			ipos++;
 			tabi++;
 		}
+		// tabi = ipos + (jpos * nbX);
 		ipos = 0;
 		jpos++;
 	}
 
-	console.log(beautify(JSON.stringify(matrix), {indent_size: 2}));
+	// console.log(beautify(JSON.stringify(matrix), {indent_size: 2}));
 	return matrix;
 }
 
