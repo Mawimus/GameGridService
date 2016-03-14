@@ -1,3 +1,4 @@
+
 var express = require('express');
 var mongoose = require('mongoose');
 var randomizeGrid = require('./app/Core/Utils/randomizeGrid');
@@ -8,37 +9,34 @@ var app = express();
 
 
 
-function getLocalMatrixTiles(maxx, maxy, currentx, currenty) {
+function getLocalMatrixTiles(maxxTiles, maxyTiles, maxx, maxy, currentx, currenty) {
 	// Cast des parametre
-	var maxx = parseInt(maxx),
+	var maxxTiles = parseInt(maxxTiles),
+		maxyTiles = parseInt(maxyTiles),
+		maxx = parseInt(maxx),
 		maxy = parseInt(maxy),
 		currentx = parseInt(currentx),
 		currenty = parseInt(currenty);
 
-	console.log('current x/y %s / %s', currentx, currenty);
-
 	// Work with nbX, nbY odd !
-	var gridSeed = 'totojojolerigolo',
+	var gridSeed = 'GrideLand#1',
 		randField = [],
 		randbarbarian = [],
-		nbX = (32*2)+1,
-		nbY = nbX,
-		fromX = Math.floor(nbX / 2) * -1,
-		toX = Math.floor(nbX / 2),
-		fromY = fromX,
-		toY = toX;
+		nbX = maxxTiles,
+		nbY = maxyTiles,
+		fromX = 0; //Math.floor(nbX / 2) * -1,
+		toX = nbX; //Math.floor(nbX / 2),
+		fromY = 0,
+		toY = nbY;
 
-	console.log('X from %s to %s', fromX, toX);
-	console.log('Y from %s to %s', fromY, toY);
-
-	randField = randomizeGrid.generateLocalWithSeed(gridSeed, maxx, maxy, currentx + 32, currenty + 32, {
+	randField = randomizeGrid.generateLocalWithSeed(gridSeed, maxx, maxy, currentx, currenty, {
 		mountain:0.2,
 		forest:0.2,
 		desert:0.2,
 		sea:0.1,
 		lowland:0.3,
 	});
-	randbarbarian = randomizeGrid.generateLocalWithSeed(gridSeed, maxx, maxy, currentx + 32, currenty + 32, {
+	randbarbarian = randomizeGrid.generateLocalWithSeed(gridSeed, maxx, maxy, currentx, currenty, {
 		nature:0.95,
 		barbarian:0.05,
 	});
@@ -107,7 +105,8 @@ function getLocalMatrixTiles(maxx, maxy, currentx, currenty) {
 	console.log('#totalBarbarian#\t: %s\t%s%', totalBarbarian, totalBarbarianpc.toFixed(2));
 
 	var matrix = [[]],
-		id, f, b, c,
+		f, b, c,
+		id = 0,
 		ipos = 0, //currentx+32,
 		jpos = 0, //currenty+32,
 		tabi = 0;
@@ -128,17 +127,23 @@ function getLocalMatrixTiles(maxx, maxy, currentx, currenty) {
 	// 	jpos++;
 	// }
 
+	console.log();
+	console.log('(%s | %s)', currentx, currenty);
+	console.log();
+
 	for (var j = 0; j < maxy; j++) {
+		id = ((currenty + j) * maxyTiles) + currentx;
+		console.log('----------');
+		console.log('j %s %s', j, id);
+		console.log('----------');
 		matrix[jpos] = [];
-		matrix[jpos] = new Array(nbX);
+		matrix[jpos] = new Array(maxx);
 		for (var i = 0; i < maxx; i++) {
-			// console.log('j %s', jpos);
-			// console.log('i %s', ipos);
-			// console.log('tabi %s', tabi);
-			id = tabi; //j.toString() + i.toString();
+			id++;
+			console.log('i %s %s', i, id);
 			f = {type: randField[tabi]};
 			b = {id: 0, type: randbarbarian[tabi], name: randbarbarian[tabi].capitalizeFirstLetter(), class: randbarbarian[tabi]};
-			c = {x: j, y: i};
+			c = {x: currentx + i, y: currenty + j};
 			matrix[jpos][ipos] = {id: id, coord: c, owner: b, field: f};
 			ipos++;
 			tabi++;
@@ -177,16 +182,17 @@ app.get('/users', function(req, res) {
 	]);
 });
 
-app.get('/matrix-tiles/:maxx/:maxy/:x/:y', function(req, res) {
+app.get('/matrix-tiles/:maxxtiles/:maxytiles/:maxx/:maxy/:currentx/:currenty/', function(req, res) {
 
-	var maxx, maxy, x, y;
-	var matrixTiles = [[]];
-	maxx = req.params.maxx;
-	maxy = req.params.maxy;
-	currentx = req.params.x;
-	currenty = req.params.y;
+	var maxxTiles = req.params.maxxtiles,
+		maxyTiles = req.params.maxytiles,
+		maxx = req.params.maxx,
+		maxy = req.params.maxy,
+		currentx = req.params.currentx,
+		currenty = req.params.currenty,
+		matrixTiles = [[]];
 
-	matrixTiles = getLocalMatrixTiles(maxx, maxy, currentx, currenty);
+	matrixTiles = getLocalMatrixTiles(maxxTiles, maxyTiles, maxx, maxy, currentx, currenty);
 	/*matrixTiles = [
 		[
 			{id:11, coord: {x:0, y:0}, owner: {id:1, type:'player', name:'Mawimus', class:'roman'}, field: {type:'mountain'}},
