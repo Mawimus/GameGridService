@@ -22,8 +22,8 @@ function weightedRand(seed, spec) {
 exports.generateWithSeed = function(seed, x, y, spec) {
 	var randomizeGrid = [];
 	var random;
-	for (i = 0; i < x; i++) {
-		for (j = 0; j < y; j++) {
+	for (j = 0; j < y; j++) {
+		for (i = 0; i < x; i++) {
 			random = weightedRand(seed+i+j, spec);
 			randomizeGrid.push(random());
 		}
@@ -34,8 +34,8 @@ exports.generateWithSeed = function(seed, x, y, spec) {
 exports.generateLocalWithSeed = function(seed, maxx, maxy, currentx, currenty, spec) {
 	var randomizeGrid = [];
 	var random;
-	for (i = currentx; i < maxx + currentx; i++) {
-		for (j = currenty; j < maxy + currenty; j++) {
+	for (j = currenty; j < maxy + currenty; j++) {
+		for (i = currentx; i < maxx + currentx; i++) {
 			random = weightedRand(seed+i+j, spec);
 			randomizeGrid.push(random());
 		}
