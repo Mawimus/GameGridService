@@ -1,6 +1,6 @@
 var mongoose = require('mongoose');
-var Tile = mongoose.model('Tile');
-var _ = require('lodash')
+var Player = require('./../../app/Models/player.model.js');
+var _ = require('lodash');
 
 
 // Gestion des erreurs

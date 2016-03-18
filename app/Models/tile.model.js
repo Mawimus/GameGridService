@@ -6,26 +6,44 @@ var Schema = mongoose.Schema;
  * Tile Schema
  */
 var TileSchema = new Schema({
-	coord: {
-		x: Number,
-		y: Number
+	gridMapId: {
+		type: Schema.ObjectId,
+		ref: 'GridMap',
+		required: 'A GridMap identification is mandatory'
 	},
+	coord: {
+		x: {
+			type: Number,
+			required: 'Coord x is mandatory'
+		},
+		y: {
+			type: Number,
+			required: 'Coord y is mandatory'
+		}
+	},
+	// ownerId: {
+	// 	type : Schema.ObjectId,
+	// 	ref: 'Player',
+	// 	required: 'A Player identification is mandatory'
+	// },
 	owner: {
-		id : Schema.ObjectId,
-		ref: 'Player'
+		type: String,
+		required: 'An owner is mandatory'
 	},
 	field: {
-		type: String
+		type: String,
+		required: 'A field is mandatory'
 	}
 });
 
-mongoose.model('Tile', TileSchema);
+module.exports = mongoose.model('Tile', TileSchema);
 
 
 	// format des tuiles :
 	/*
 		{
 			id:number,
+			map: Number,
 			coord:object {
 				x:number,
 				y:number
