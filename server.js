@@ -7,6 +7,7 @@
 var express = require('express');
 var app = express();
 var bodyParser = require('body-parser');
+var Q = require('q');
 
 // debug extention
 var beautify = require('js-beautify').js_beautify;
@@ -76,22 +77,36 @@ router.route('/localtiles/:gridmapid/:maxx/:maxy/:currentx/:currenty/')
 			currenty = req.params.currenty;
 
 		console.log('GET: /localtiles/%s/%s/%s/%s/%s/', gridmapid, maxx, maxy, currentx, currenty);
-		// var maxxTiles = req.params.maxxtiles,
-		// 	matrixTiles = [[]];
 
-		// matrixTiles = tiles.getLocalMatrixTiles(maxxTiles, maxyTiles, maxx, maxy, currentx, currenty);
-		// res.json(matrixTiles);
+		var sendError = sendErrorTo(res);
+		var sendIt = sendResponseTo(res);
+		var data = {gridmapid: gridmapid, size: {maxx: maxx, maxy:maxy}, coord: {currentx: currentx, currenty:currenty}};
 
-		var size = {maxx: maxx, maxy:maxy};
-		var coord = {currentx: currentx, currenty:currenty};
-		tiles.getlocalGridMapTiles(gridmapid, size, coord, function(response) {
-			res.json(response);
-		});
+		Q().then(tiles.getlocalGridMapTiles(data))
+			.then(sendIt)
+			.catch(sendError)
+			.finally(function() {
+				console.log('response was sent successfully');
+			});
 	});
 
 // REGISTER OUR ROUTES -------------------------------
 // all of our routes will be prefixed with /api
 app.use('/api', router);
+
+function sendErrorTo(response) {
+	return function(err) {
+		// var html = '<html><body>erreur dans la récupération de la page : <br>$err</body></html>';
+		// response.status(404).json(html.replace('$err', err));
+		response.status(404).json({err: err});
+	}
+}
+
+function sendResponseTo(response) {
+	return function(data) {
+		response.status(200).json(data);
+	}
+}
 
 
 // START THE SERVER

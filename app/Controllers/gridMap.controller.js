@@ -1,8 +1,13 @@
 var mongoose = require('mongoose');
+var _ = require('lodash');
+var Q = require('q');
+
 var GridMap = require('./../../app/Models/gridMap.model.js');
 var Tile = require('./../../app/Models/tile.model.js');
+
 var TilesController = require('./../../app/Controllers/tiles.controller.js')
-var _ = require('lodash');
+
+
 
 
 // Gestion des erreurs
@@ -29,6 +34,8 @@ var getErrorMessage = function(err) {
 
 
 exports.generateNewMap = function(seed, size, callback) {
+	console.log('generateNewMap');
+
 	var gridMap = new GridMap();
 	if (typeof seed !== 'undefined') gridMap.seed = seed;
 	if (typeof size !== 'undefined') gridMap.size = size;
@@ -44,10 +51,12 @@ exports.generateNewMap = function(seed, size, callback) {
 	});
 }
 
-exports.getGridMapById = function(gridMapId, next) {
-	GridMap.findOne({'_id': gridMapId}, function(err, doc) {
-		next(err, doc);
-	});
+exports.getGridMapById = function(gridMapId) {
+	return function () {
+		var deferred = Q.defer();
+		GridMap.findOne({'_id': gridMapId}, deferred.makeNodeResolver());
+		return deferred.promise;
+	}
 }
 
 // ------------------------------ //

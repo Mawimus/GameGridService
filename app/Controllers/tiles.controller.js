@@ -1,10 +1,12 @@
 var mongoose = require('mongoose');
-var Tile = require('./../../app/Models/tile.model.js')
-var GridMapController = require('./../../app/Controllers/gridMap.controller.js')
 var _ = require('lodash');
+var Q = require('q');
 
 var randomizeGrid = require('./../../app/Core/Utils/randomizeGrid');
 var utils = require('./../../app/Core/Utils/utils');
+
+var Tile = require('./../../app/Models/tile.model.js')
+var GridMapController = require('./../../app/Controllers/gridMap.controller.js')
 
 
 // Gestion des erreurs
@@ -46,33 +48,45 @@ var create = function(tile, next) {
 // delete a tile
 
 // list tiles by gridMapId
-var getLocalTilesByGridMapId = function(gridMap, size, coord, next) {
+function getLocalTilesByGridMapId(data) {
+	return function(gridmap) {
+		var deferred = Q.defer();
 
-	var maxx = size.maxx -1,
-		maxy = size.maxy -1,
-		tox, toy;
+		var size = data.size,
+			coord = data.coord,
+			maxx = size.maxx -1,
+			maxy = size.maxy -1,
+			tox, toy;
 
-	if (parseInt(gridMap.size.maxx) < parseInt(maxx) + parseInt(coord.currentx)) maxx = parseInt(gridMap.size.maxx) - parseInt(coord.currentx) -1;
-	if (parseInt(gridMap.size.maxy) < parseInt(maxy) + parseInt(coord.currenty)) maxy = parseInt(gridMap.size.maxy) - parseInt(coord.currenty) -1;
+		if (parseInt(gridmap.size.maxx) < parseInt(maxx) + parseInt(coord.currentx)) maxx = parseInt(gridmap.size.maxx) - parseInt(coord.currentx) -1;
+		if (parseInt(gridmap.size.maxy) < parseInt(maxy) + parseInt(coord.currenty)) maxy = parseInt(gridmap.size.maxy) - parseInt(coord.currenty) -1;
 
-	tox = parseInt(coord.currentx) + parseInt(maxx);
-	toy = parseInt(coord.currenty) + parseInt(maxy);
+		tox = parseInt(coord.currentx) + parseInt(maxx);
+		toy = parseInt(coord.currenty) + parseInt(maxy);
 
-	console.log('x between %s %s', coord.currentx, tox);
-	console.log('y between %s %s', coord.currenty, toy);
+		// console.log('x between %s %s', coord.currentx, tox);
+		// console.log('y between %s %s', coord.currenty, toy);
 
-	// pour ordonner les valeurs
-	// http://stackoverflow.com/questions/5825520/in-mongoose-how-do-i-sort-by-date-node-js
-	Tile.find({
-		gridMapId: gridMap._id,
-		'coord.x': {$gte: coord.currentx, $lte: tox},
-		'coord.y': {$gte: coord.currenty, $lte: toy}
-	}).sort({
-		'coord.y': 'asc',
-		'coord.x': 'asc'
-	}).exec(function(err, collections) {
-		next(err, collections);
-	});
+		// pour ordonner les valeurs
+		// http://stackoverflow.com/questions/5825520/in-mongoose-how-do-i-sort-by-date-node-js
+		Tile.find({
+			gridMapId: gridmap._id,
+			'coord.x': {$gte: coord.currentx, $lte: tox},
+			'coord.y': {$gte: coord.currenty, $lte: toy}
+		})
+		.select('_id field owner coord')
+		.sort({
+			'coord.y': 'asc',
+			'coord.x': 'asc'
+		})
+		.exec(deferred.makeNodeResolver());
+		// .exec(function(err, collection) {
+		// 	if (err) deferred.reject(err);
+		// 	else deferred.resolve({gridmap: gridmap, collection: collection});
+		// });
+
+		return deferred.promise;
+	}
 }
 
 var getTilesByGridMapId = function(gridMapId, next) {
@@ -107,7 +121,7 @@ exports.generateTilesByMap = function(gridMap, next) {
 	next();
 }
 
-var generateOwnerByTile = function(seed, coord) {
+function generateOwnerByTile(seed, coord) {
 	randOwner = randomizeGrid.generateLocalWithSeed(seed, 1, 1, coord.x, coord.y, {
 		nature:0.95,
 		barbarian:0.05,
@@ -115,7 +129,7 @@ var generateOwnerByTile = function(seed, coord) {
 	return randOwner;
 }
 
-var generateFieldByTile = function(seed, coord) {
+function generateFieldByTile(seed, coord) {
 	randField = randomizeGrid.generateLocalWithSeed(seed, 1, 1, coord.x, coord.y, {
 		mountain:0.2,
 		forest:0.2,
@@ -126,29 +140,49 @@ var generateFieldByTile = function(seed, coord) {
 	return randField;
 }
 
-exports.getlocalGridMapTiles = function(gridmapid, size, coord, callback) {
+function transformMatrixArray(array, size) {
+	var arrayArray = [[]]
+		tabi = 0;
 
-	GridMapController.getGridMapById(gridmapid, function(err, doc) {
-		getLocalTilesByGridMapId(doc, size, coord, function(err, collections) {
-
-			// Transformer la liste de tuile en tableau de tableau
-			var tilesArrays = [[]],
-				tabi = 0;
-
-			for (var j = 0; j < size.maxy; j++) {
-				tilesArrays[j] = [];
-				tilesArrays[j] = new Array(size.maxx);
-				for (var i = 0; i < size.maxx; i++) {
-					tilesArrays[j][i] = collections[tabi];
-					tabi++;
-				}
+		for (var j = 0; j < size.maxy; j++) {
+			arrayArray[j] = [];
+			arrayArray[j] = new Array(size.maxx);
+			for (var i = 0; i < size.maxx; i++) {
+				arrayArray[j][i] = array[tabi];
+				tabi++;
 			}
+		}
 
-			var data = {gridMap: doc, tiles: tilesArrays};
-			callback(data);
-		});
-	});
+	return arrayArray;
+}
 
+// Promise
+// http://blog.valtech.fr/2013/11/03/promesses-q-nodejs/comment-page-1/
+exports.getlocalGridMapTiles = function(data) {
+	console.log('------------------------------');
+	console.log('getlocalGridMapTiles');
+	console.log();
+
+	return function() {
+		var deferred = Q.defer();
+
+		Q().then(GridMapController.getGridMapById(data.gridmapid))
+			.then(getLocalTilesByGridMapId(data))
+			.then(function(collection) {
+				var response = {tiles: transformMatrixArray(collection, data.size)}
+				deferred.resolve(response);
+			})
+			.catch(function(err) {
+				console.log('------------------------------');
+				console.log('Catch error');
+				console.log();
+				deferred.reject(err);
+			})
+			.finally(function() {
+			});
+
+		return deferred.promise;
+	}
 }
 
 exports.generateLocalMatrixTiles = function(maxxTiles, maxyTiles, maxx, maxy, currentx, currenty) {
