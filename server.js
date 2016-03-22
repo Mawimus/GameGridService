@@ -47,6 +47,7 @@ router.get('/', function(req, res) {
     res.json({ message: 'hooray! welcome to our api!' });
 });
 
+// Création d'une map
 router.route('/map/')
 	.post(function(req, res) {
 		console.log('POST: /map/');
@@ -55,19 +56,20 @@ router.route('/map/')
 		var seed = req.body.seed,
 			size = req.body.size;
 
-		gridMap.generateNewMap(seed, size, function(response) {
-			res.json(response);
-		});
+		var sendError = sendErrorTo(res);
+		var sendIt = sendResponseTo(res);
+		var data = {seed: seed, size: size};
+
+		Q().then(gridMap.generateNewMap(data))
+			.then(sendIt)
+			.catch(sendError)
+			.finally(function() {
+				console.log('response was sent successfully');
+			});
 	});
 
-router.get('/users', function(req, res) {
-	res.send([
-		{name:'Mawimus'},
-		{name:'Poudjik'}
-	]);
-});
-
-router.route('/localtiles/:gridmapid/:maxx/:maxy/:currentx/:currenty/')
+// Récupération local des tuiles d'une map
+router.route('/localtiles/:gridmapid/:maxx/:maxy/:currentx/:currenty')
 	.get(function(req, res) {
 
 		var gridmapid = req.params.gridmapid,
@@ -89,6 +91,13 @@ router.route('/localtiles/:gridmapid/:maxx/:maxy/:currentx/:currenty/')
 				console.log('response was sent successfully');
 			});
 	});
+
+router.get('/users', function(req, res) {
+	res.send([
+		{name:'Mawimus'},
+		{name:'Poudjik'}
+	]);
+});
 
 // REGISTER OUR ROUTES -------------------------------
 // all of our routes will be prefixed with /api

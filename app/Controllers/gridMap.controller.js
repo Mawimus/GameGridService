@@ -33,28 +33,45 @@ var getErrorMessage = function(err) {
 
 
 
-exports.generateNewMap = function(seed, size, callback) {
+exports.generateNewMap = function(data) {
+	console.log('------------------------------');
 	console.log('generateNewMap');
+	console.log();
 
-	var gridMap = new GridMap();
-	if (typeof seed !== 'undefined') gridMap.seed = seed;
-	if (typeof size !== 'undefined') gridMap.size = size;
+	return function() {
+		var deferred = Q.defer();
+		var gridMap = new GridMap();
 
-	// Insertion de la carte dans la BD
-	create(gridMap, function(responseMap) {
-		if (responseMap.err.status == 200) {
-			// Génération de toutes les tuiles de la carte et insertion dans la BD
-			TilesController.generateTilesByMap(responseMap.doc, function() {
-				if (typeof callback === 'function') callback(responseMap);
+		if (typeof data.seed !== 'undefined') gridMap.seed = data.seed;
+		if (typeof data.size !== 'undefined') gridMap.size = data.size;
+
+		Q().then(create(gridMap))
+			.then(TilesController.generateTilesByMap)
+			.then(function(res) {
+				deferred.resolve(res);
+			})
+			.catch(function(err) {
+				console.log('------------------------------');
+				console.log('Catch error: generateNewMap');
+				console.log(err);
+				console.log();
+				deferred.reject(err);
+			})
+			.finally(function() {
 			});
-		}
-	});
+
+			console.log('end 3');
+
+		return deferred.promise;
+	}
 }
 
 exports.getGridMapById = function(gridMapId) {
 	return function () {
 		var deferred = Q.defer();
+
 		GridMap.findOne({'_id': gridMapId}, deferred.makeNodeResolver());
+
 		return deferred.promise;
 	}
 }
@@ -64,13 +81,14 @@ exports.getGridMapById = function(gridMapId) {
 // ------------------------------ //
 
 // Create
-var create = function(gridMap, next) {
-	gridMap.save(function(err, doc) {
-		if (err) doc = null;
-		else err = {status: 200};
-		var response = {err: err, doc: doc};
-		next(response);
-	});
+function create(gridMap) {
+	return function() {
+		var deferred = Q.defer();
+
+		gridMap.save(deferred.makeNodeResolver());
+
+		return deferred.promise;
+	}
 }
 
 // Read
