@@ -6,6 +6,7 @@
 // call the packages we need
 var express = require('express');
 var app = express();
+var cors = require('cors');
 var bodyParser = require('body-parser');
 var Q = require('q');
 
@@ -35,8 +36,10 @@ var players = require('./app/Controllers/players.controller.js');
 // this will let us get the data from a POST
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
+app.use(cors({origin: 'http://localhost:8000'}));
 
 var port = process.env.PORT || 3000;        // set our port
+
 
 // ROUTES FOR OUR API
 // =============================================================================
@@ -46,6 +49,20 @@ var router = express.Router();              // get an instance of the express Ro
 router.get('/', function(req, res) {
     res.json({ message: 'hooray! welcome to our api!' });
 });
+
+router.route('/user/connect/')
+	.post(function(req, res) {
+
+		var sendError = sendErrorTo(res);
+		var sendIt = sendResponseTo(res);
+
+		Q().then(sendIt)
+			.catch(sendError)
+			.finally(function() {
+				console.log('response was sent successfully');
+			});
+	});
+
 
 // Création d'une map
 router.route('/map/')
