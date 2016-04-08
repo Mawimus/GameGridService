@@ -8,9 +8,8 @@ var Tile = require('./../../app/Models/tile.model.js');
 var TilesController = require('./../../app/Controllers/tiles.controller.js')
 
 
-
-
-// Gestion des erreurs
+// #################################################################################################### //
+// -- [Gestion des erreurs]  -- //
 var getErrorMessage = function(err) {
 	var message = '';
 

@@ -5,7 +5,6 @@
 
 // call the packages we need
 var express = require('express');
-var app = express();
 var cors = require('cors');
 var bodyParser = require('body-parser');
 var Q = require('q');
@@ -34,9 +33,11 @@ var players = require('./app/Controllers/players.controller.js');
 
 // configure app to use bodyParser()
 // this will let us get the data from a POST
+var app = express();
+
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
-app.use(cors({origin: 'http://localhost:8000'}));
+app.use(cors({origin: 'http://localhost:8080'}));
 
 var port = process.env.PORT || 3000;        // set our port
 
@@ -50,13 +51,42 @@ router.get('/', function(req, res) {
     res.json({ message: 'hooray! welcome to our api!' });
 });
 
-router.route('/user/connect/')
+router.route('/user/')
 	.post(function(req, res) {
+		console.log('POST: /user/');
+		console.log(req.body);
+
+		var email = req.body.email,
+			login = req.body.login,
+			pseudo = req.body.pseudo,
+			hashpassword = req.body.password;
 
 		var sendError = sendErrorTo(res);
 		var sendIt = sendResponseTo(res);
+		var data = {email: email, login: login, pseudo: pseudo, password: hashpassword};
 
-		Q().then(sendIt)
+		Q().then(players.create(data))
+			.then(sendIt)
+			.catch(sendError)
+			.finally(function() {
+				console.log('response was sent successfully');
+			});
+	});
+
+router.route('/user/connect/')
+	.post(function(req, res) {
+		console.log('POST: /user/connect/');
+		console.log(req.body);
+
+		var login = req.body.login,
+			hashpassword = req.body.password;
+
+		var sendError = sendErrorTo(res);
+		var sendIt = sendResponseTo(res);
+		var data = {login: login, password: hashpassword};
+
+		Q().then(players.getByConnection(data))
+			.then(sendIt)
 			.catch(sendError)
 			.finally(function() {
 				console.log('response was sent successfully');

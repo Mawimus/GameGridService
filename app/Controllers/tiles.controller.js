@@ -37,9 +37,7 @@ var getErrorMessage = function(err) {
 function create(tile) {
 	return function() {
 		var deferred = Q.defer();
-
 		tile.save(deferred.makeNodeResolver());
-
 		return deferred.promise;
 	}
 }
