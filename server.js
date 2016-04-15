@@ -7,7 +7,6 @@
 var express = require('express');
 var cors = require('cors');
 var bodyParser = require('body-parser');
-var Q = require('q');
 
 // debug extention
 var beautify = require('js-beautify').js_beautify;
@@ -25,12 +24,6 @@ mongoose.connect('mongodb://localhost/gamegride');
 
 // });
 
-// Controllers
-var gridMap = require('./app/Controllers/gridMap.controller.js');
-var tiles = require('./app/Controllers/tiles.controller.js');
-var players = require('./app/Controllers/players.controller.js');
-
-
 // configure app to use bodyParser()
 // this will let us get the data from a POST
 var app = express();
@@ -47,122 +40,17 @@ var port = process.env.PORT || 3000;        // set our port
 var router = express.Router();              // get an instance of the express Router
 
 // test route to make sure everything is working (accessed at GET http://localhost:8080/api)
-router.get('/', function(req, res) {
-    res.json({ message: 'hooray! welcome to our api!' });
-});
-
-router.route('/user/')
-	.post(function(req, res) {
-		console.log('POST: /user/');
-		console.log(req.body);
-
-		var email = req.body.email,
-			login = req.body.login,
-			pseudo = req.body.pseudo,
-			hashpassword = req.body.password;
-
-		var sendError = sendErrorTo(res);
-		var sendIt = sendResponseTo(res);
-		var data = {email: email, login: login, pseudo: pseudo, password: hashpassword};
-
-		Q().then(players.create(data))
-			.then(sendIt)
-			.catch(sendError)
-			.finally(function() {
-				console.log('response was sent successfully');
-			});
-	});
-
-router.route('/user/connect/')
-	.post(function(req, res) {
-		console.log('POST: /user/connect/');
-		console.log(req.body);
-
-		var login = req.body.login,
-			hashpassword = req.body.password;
-
-		var sendError = sendErrorTo(res);
-		var sendIt = sendResponseTo(res);
-		var data = {login: login, password: hashpassword};
-
-		Q().then(players.getByConnection(data))
-			.then(sendIt)
-			.catch(sendError)
-			.finally(function() {
-				console.log('response was sent successfully');
-			});
-	});
-
-
-// Création d'une map
-router.route('/map/')
-	.post(function(req, res) {
-		console.log('POST: /map/');
-		console.log(req.body);
-
-		var seed = req.body.seed,
-			size = req.body.size;
-
-		var sendError = sendErrorTo(res);
-		var sendIt = sendResponseTo(res);
-		var data = {seed: seed, size: size};
-
-		Q().then(gridMap.generateNewMap(data))
-			.then(sendIt)
-			.catch(sendError)
-			.finally(function() {
-				console.log('response was sent successfully');
-			});
-	});
-
-// Récupération local des tuiles d'une map
-router.route('/localtiles/:gridmapid/:maxx/:maxy/:currentx/:currenty')
+router.route('/')
 	.get(function(req, res) {
-
-		var gridmapid = req.params.gridmapid,
-			maxx = req.params.maxx,
-			maxy = req.params.maxy,
-			currentx = req.params.currentx,
-			currenty = req.params.currenty;
-
-		console.log('GET: /localtiles/%s/%s/%s/%s/%s/', gridmapid, maxx, maxy, currentx, currenty);
-
-		var sendError = sendErrorTo(res);
-		var sendIt = sendResponseTo(res);
-		var data = {gridmapid: gridmapid, size: {maxx: maxx, maxy:maxy}, coord: {currentx: currentx, currenty:currenty}};
-
-		Q().then(tiles.getlocalGridMapTiles(data))
-			.then(sendIt)
-			.catch(sendError)
-			.finally(function() {
-				console.log('response was sent successfully');
-			});
+    	res.status(200).jsonp({ message: 'hooray! welcome to our api!' });
 	});
 
-router.get('/users', function(req, res) {
-	res.send([
-		{name:'Mawimus'},
-		{name:'Poudjik'}
-	]);
-});
+require('./app/Routes/player.route')(router);
+require('./app/Routes/tile.route')(router);
 
 // REGISTER OUR ROUTES -------------------------------
 // all of our routes will be prefixed with /api
 app.use('/api', router);
-
-function sendErrorTo(response) {
-	return function(err) {
-		// var html = '<html><body>erreur dans la récupération de la page : <br>$err</body></html>';
-		// response.status(404).json(html.replace('$err', err));
-		response.status(404).json({err: err});
-	}
-}
-
-function sendResponseTo(response) {
-	return function(data) {
-		response.status(200).json(data);
-	}
-}
 
 
 // START THE SERVER

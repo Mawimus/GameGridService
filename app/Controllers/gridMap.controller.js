@@ -43,6 +43,7 @@ exports.generateNewMap = function(data) {
 
 		if (typeof data.seed !== 'undefined') gridMap.seed = data.seed;
 		if (typeof data.size !== 'undefined') gridMap.size = data.size;
+		if (typeof data.world !== 'undefined') gridMap.world = data.world;
 
 		Q().then(create(gridMap))
 			.then(TilesController.generateTilesByMap)
@@ -83,9 +84,7 @@ exports.getGridMapById = function(gridMapId) {
 function create(gridMap) {
 	return function() {
 		var deferred = Q.defer();
-
 		gridMap.save(deferred.makeNodeResolver());
-
 		return deferred.promise;
 	}
 }
@@ -103,4 +102,16 @@ exports.update = function() {
 // Delete
 exports.delete = function() {
 
+}
+
+// La liste de toutes les cartes
+exports.list = function() {
+	console.log('------------------------------');
+	console.log('list');
+	console.log();
+	return function() {
+		var deferred = Q.defer();
+		GridMap.find().exec(deferred.makeNodeResolver());
+		return deferred.promise;
+	}
 }

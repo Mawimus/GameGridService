@@ -1,5 +1,6 @@
 var mongoose = require('mongoose');
 var uuid = require('uuid-lib');
+
 var Schema = mongoose.Schema;
 
 var PlayerSchema = new Schema({
@@ -18,18 +19,27 @@ var PlayerSchema = new Schema({
 	},
 	email: {
 		type: String,
-		index: {
-			unique: true
-		},
+		// index: {
+		// 	unique: true
+		// },
 		default: '',
 		trim: true,
 		required: 'The email is mandatory'
 	},
+	pseudo: {
+		type: String,
+		// index: {
+		// 	unique: true
+		// },
+		default: '',
+		trim: true,
+		required: 'Pseudo is mandatory'
+	},
 	login: {
 		type: String,
-		index: {
-			unique: true
-		},
+		// index: {
+		// 	unique: true
+		// },
 		default: '',
 		trim: true,
 		required: 'The login is mandatory'
@@ -39,16 +49,20 @@ var PlayerSchema = new Schema({
 		default: '',
 		required: 'Password is mandatory'
 	},
-	pseudo: {
-		type: String,
-		default: '',
-		trim: true,
-		required: 'Pseudo is mandatory'
-	},
-	class: {
+	world: {
 		type: Schema.ObjectId,
-		ref: 'Class'
+		ref: 'GridMap'
+	},
+	nation: {
+		type: String,
+		trim: true
 	}
 });
+
+
+PlayerSchema.index({email: 1, world: 1}, {unique: true});
+PlayerSchema.index({pseudo: 1, world: 1}, {unique: true});
+PlayerSchema.index({login: 1, world: 1}, {unique: true});
+
 
 module.exports = mongoose.model('Player', PlayerSchema);

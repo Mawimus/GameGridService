@@ -1,5 +1,7 @@
 var mongoose = require('mongoose');
+var uuid = require('uuid-lib');
 var randomstring = require('randomstring');
+
 var Schema = mongoose.Schema;
 
 
@@ -11,7 +13,15 @@ var GridMapSchema = new Schema({
 		type: Date,
 		default: Date.now
 	},
-	seed: {
+	token: {
+		type: String,
+		index: {
+			unique: true
+		},
+		default: function() {return uuid.raw()},
+		trim: true,
+		required: 'The token is mandatory'
+	},	seed: {
 		type: String,
 		default: function() {return randomstring.generate()},
 		trim: true,
@@ -38,6 +48,25 @@ var GridMapSchema = new Schema({
 			default: 65,
 			required: 'Max y is required'
 		}
+	},
+	world: {
+		name: {
+			type: String,
+			default: '',
+			trim: true,
+			required: 'The world name is mandatory'
+		},
+		description: {
+			type: String,
+			default: '',
+			trim: true
+		},
+		rules: {
+			type: Schema.ObjectId,
+			ref: 'Rule',
+			required: 'Rules are mandatory'
+		}
+
 	}
 });
 
