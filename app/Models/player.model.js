@@ -19,27 +19,18 @@ var PlayerSchema = new Schema({
 	},
 	email: {
 		type: String,
-		// index: {
-		// 	unique: true
-		// },
 		default: '',
 		trim: true,
 		required: 'The email is mandatory'
 	},
 	pseudo: {
 		type: String,
-		// index: {
-		// 	unique: true
-		// },
 		default: '',
 		trim: true,
 		required: 'Pseudo is mandatory'
 	},
 	login: {
 		type: String,
-		// index: {
-		// 	unique: true
-		// },
 		default: '',
 		trim: true,
 		required: 'The login is mandatory'

@@ -2,17 +2,22 @@ var Q = require('q');
 
 var routeUtils = require('../../app/Routes/route.utils');
 
-var gridMap = require('./../../app/Controllers/gridMap.controller')
-var tiles = require('../../app/Controllers/tiles.controller');
+var GridMap = require('./../../app/Controllers/gridMap.controller')
+var Tiles = require('../../app/Controllers/tiles.controller');
 
 module.exports = function(router) {
 	// Récupération de tous les mondes
-	router.route('/worlds/')
+	router.route('/worlds/:skip/:limit')
 		.get(function(req, res) {
-			console.log('GET: /worlds/');
 
-			Q().then(gridMap.list())
-				.then(routeUtils.sendResponseTo(res, 201))
+			var skip = parseInt(req.params.skip),
+				limit = parseInt(req.params.limit);
+			var data = {skip: skip, limit: limit};
+
+			console.log('GET: /worlds/%s/%s', skip, limit);
+
+			GridMap.Worlds(data)
+				.then(routeUtils.sendResponseTo(res, 200))
 				.catch(routeUtils.sendErrorTo(res, 422))
 				.finally(routeUtils.answerEnd());
 		});
@@ -28,26 +33,26 @@ module.exports = function(router) {
 				world = req.body.world;
 			var data = {seed: seed, size: size, world: world};
 
-			Q().then(gridMap.generateNewMap(data))
+			Q().then(GridMap.generateNewMap(data))
 				.then(routeUtils.sendResponseTo(res, 201))
 				.catch(routeUtils.sendErrorTo(res, 422))
 				.finally(routeUtils.answerEnd());
 		});
 
 	// Récupération local des tuiles d'une map
-	router.route('/localtiles/:gridmapid/:maxx/:maxy/:currentx/:currenty')
+	router.route('/localtiles/:worldid/:maxx/:maxy/:currentx/:currenty')
 		.get(function(req, res) {
 
-			var gridmapid = req.params.gridmapid,
+			var worldId = req.params.worldid,
 				maxx = req.params.maxx,
 				maxy = req.params.maxy,
 				currentx = req.params.currentx,
 				currenty = req.params.currenty;
-			var data = {gridmapid: gridmapid, size: {maxx: maxx, maxy:maxy}, coord: {currentx: currentx, currenty:currenty}};
+			var data = {worldId: worldId, size: {maxx: maxx, maxy:maxy}, coord: {currentx: currentx, currenty:currenty}};
 
-			console.log('GET: /localtiles/%s/%s/%s/%s/%s/', gridmapid, maxx, maxy, currentx, currenty);
+			console.log('GET: /localtiles/%s/%s/%s/%s/%s/', worldId, maxx, maxy, currentx, currenty);
 
-			Q().then(tiles.getlocalGridMapTiles(data))
+			Tiles.getLocalWorldTiles(data)
 				.then(routeUtils.sendResponseTo(res, 200))
 				.catch(routeUtils.sendErrorTo(res, 422))
 				.finally(routeUtils.answerEnd());

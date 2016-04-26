@@ -15,13 +15,11 @@ var GridMapSchema = new Schema({
 	},
 	token: {
 		type: String,
-		index: {
-			unique: true
-		},
 		default: function() {return uuid.raw()},
 		trim: true,
 		required: 'The token is mandatory'
-	},	seed: {
+	},
+	seed: {
 		type: String,
 		default: function() {return randomstring.generate()},
 		trim: true,
@@ -69,6 +67,9 @@ var GridMapSchema = new Schema({
 
 	}
 });
+
+GridMapSchema.index({token: 1}, {unique: true});
+GridMapSchema.index({'world.name': 1}, {unique: true});
 
 module.exports = mongoose.model('GridMap', GridMapSchema);
 

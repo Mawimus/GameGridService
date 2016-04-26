@@ -2,34 +2,9 @@ var mongoose = require('mongoose');
 var _ = require('lodash');
 var Q = require('q');
 
-var GridMap = require('./../../app/Models/gridMap.model.js');
-var Tile = require('./../../app/Models/tile.model.js');
-
-var TilesController = require('./../../app/Controllers/tiles.controller.js')
-
-
-// #################################################################################################### //
-// -- [Gestion des erreurs]  -- //
-var getErrorMessage = function(err) {
-	var message = '';
-
-	if (err.code) {
-		switch (err.code) {
-			case 11000:
-			case 11001:
-				message = 'GridMap already exists';
-				break;
-			default:
-				message = 'Something went wrong';
-		}
-	} else {
-		for (var errName in err.errors) {
-			if (err.errors[errName].message) message = err.errors[errName].message;
-		}
-	}
-	return message;
-}
-
+var GridmapModel = require('./../../app/Models/gridMap.model.js');
+var GridmapHelper = require('./../../app/Models/DAL/gridMap.model.helper.js');
+var TilesController = require('./../../app/Controllers/tiles.controller.js');
 
 
 exports.generateNewMap = function(data) {
@@ -39,79 +14,40 @@ exports.generateNewMap = function(data) {
 
 	return function() {
 		var deferred = Q.defer();
-		var gridMap = new GridMap();
+		var gridmap = new GridmapModel();
 
-		if (typeof data.seed !== 'undefined') gridMap.seed = data.seed;
-		if (typeof data.size !== 'undefined') gridMap.size = data.size;
-		if (typeof data.world !== 'undefined') gridMap.world = data.world;
+		if (typeof data.seed !== 'undefined') gridmap.seed = data.seed;
+		if (typeof data.size !== 'undefined') gridmap.size = data.size;
+		if (typeof data.world !== 'undefined') gridmap.world = data.world;
 
-		Q().then(create(gridMap))
-			.then(TilesController.generateTilesByMap)
-			.then(function(res) {
-				deferred.resolve(res);
-			})
-			.catch(function(err) {
-				console.log('------------------------------');
-				console.log('Catch error: generateNewMap');
-				console.log(err);
-				console.log();
-				deferred.reject(err);
-			})
-			.finally(function() {
-			});
-
-			console.log('end 3');
+		GridmapHelper.save(gridmap, function(err, doc) {
+			if (err) deferred.reject(err);
+			else {
+				TilesController.generateTilesForMap(doc)
+					.then(function(doc) {
+						deferred.resolve(doc);
+					})
+					.catch(function(err) {
+						deferred.reject(err);
+					});
+			}
+		});
 
 		return deferred.promise;
 	}
 }
 
-exports.getGridMapById = function(gridMapId) {
-	return function () {
-		var deferred = Q.defer();
-
-		GridMap.findOne({'_id': gridMapId}, deferred.makeNodeResolver());
-
-		return deferred.promise;
-	}
-}
-
-// ------------------------------ //
-//              CRUD              //
-// ------------------------------ //
-
-// Create
-function create(gridMap) {
-	return function() {
-		var deferred = Q.defer();
-		gridMap.save(deferred.makeNodeResolver());
-		return deferred.promise;
-	}
-}
-
-// Read
-exports.read = function() {
-
-}
-
-// Update
-exports.update = function() {
-
-}
-
-// Delete
-exports.delete = function() {
-
-}
-
-// La liste de toutes les cartes
-exports.list = function() {
+exports.Worlds = function(data) {
 	console.log('------------------------------');
-	console.log('list');
+	console.log('Worlds');
 	console.log();
-	return function() {
-		var deferred = Q.defer();
-		GridMap.find().exec(deferred.makeNodeResolver());
-		return deferred.promise;
-	}
+
+	var deferred = Q.defer();
+
+	GridmapHelper.list(data.skip, data.limit, function(err, col) {
+		if (err) deferred.reject(err);
+		else deferred.resolve(col);
+	});
+
+	return deferred.promise;
 }
