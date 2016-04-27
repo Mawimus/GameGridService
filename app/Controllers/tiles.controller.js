@@ -6,8 +6,8 @@ var randomizeGrid = require('./../../app/Core/Utils/randomizeGrid');
 var utils = require('./../../app/Core/Utils/utils');
 
 var TileModel = require('./../../app/Models/tile.model.js');
-var TileHelper = require('./../../app/Models/DAL/tile.model.helper.js');
-var GridmapHelper = require('./../../app/Models/DAL/gridMap.model.helper.js');
+var TileHelper = require('./../../app/Models/DAL/tile.helper.js');
+var GridmapHelper = require('./../../app/Models/DAL/gridMap.helper.js');
 var GridMapController = require('./../../app/Controllers/gridMap.controller.js')
 
 exports.generateTilesForMap = function(gridmap) {

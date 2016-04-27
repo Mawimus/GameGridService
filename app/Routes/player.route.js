@@ -2,7 +2,7 @@ var Q = require('q');
 
 var routeUtils = require('../../app/Routes/route.utils');
 
-var players = require('../../app/Controllers/players.controller');
+var Players = require('../../app/Controllers/players.controller');
 
 module.exports = function(router) {
 router.route('/user/')
@@ -16,7 +16,7 @@ router.route('/user/')
 			hashpassword = req.body.password;
 		var data = {email: email, login: login, pseudo: pseudo, password: hashpassword};
 
-		Q().then(players.create(data))
+		Players.create(data)
 			.then(routeUtils.sendResponseTo(res, 201))
 			.catch(routeUtils.sendErrorTo(res, 422))
 			.finally(routeUtils.answerEnd());
@@ -31,7 +31,7 @@ router.route('/user/connect/')
 			hashpassword = req.body.password;
 		var data = {login: login, password: hashpassword};
 
-		Q().then(players.getByConnection(data))
+		Players.getByConnection(data)
 			.then(routeUtils.sendResponseTo(res, 200))
 			.catch(routeUtils.sendErrorTo(res), 422)
 			.finally(routeUtils.answerEnd());

@@ -33,7 +33,7 @@ module.exports = function(router) {
 				world = req.body.world;
 			var data = {seed: seed, size: size, world: world};
 
-			Q().then(GridMap.generateNewMap(data))
+			GridMap.generateNewMap(data)
 				.then(routeUtils.sendResponseTo(res, 201))
 				.catch(routeUtils.sendErrorTo(res, 422))
 				.finally(routeUtils.answerEnd());
