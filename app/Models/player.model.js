@@ -40,9 +40,10 @@ var PlayerSchema = new Schema({
 		default: '',
 		required: 'Password is mandatory'
 	},
-	world: {
+	worldId: {
 		type: Schema.ObjectId,
-		ref: 'GridMap'
+		ref: 'World',
+		required: 'A world is mandatory'
 	},
 	nation: {
 		type: String,
@@ -51,9 +52,9 @@ var PlayerSchema = new Schema({
 });
 
 
-PlayerSchema.index({email: 1, world: 1}, {unique: true});
-PlayerSchema.index({pseudo: 1, world: 1}, {unique: true});
-PlayerSchema.index({login: 1, world: 1}, {unique: true});
+PlayerSchema.index({email: 1, worldId: 1}, {unique: true});
+PlayerSchema.index({pseudo: 1, worldId: 1}, {unique: true});
+PlayerSchema.index({login: 1, worldId: 1}, {unique: true});
 
 
 module.exports = mongoose.model('Player', PlayerSchema);

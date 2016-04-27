@@ -2,12 +2,12 @@ var Q = require('q');
 
 var routeUtils = require('../../app/Routes/route.utils');
 
-var GridMap = require('./../../app/Controllers/gridMap.controller')
+var World = require('./../../app/Controllers/world.controller')
 var Tiles = require('../../app/Controllers/tiles.controller');
 
 module.exports = function(router) {
 	// Récupération de tous les mondes
-	router.route('/worlds/:skip/:limit')
+	router.route('/worlds/:skip/:limit/')
 		.get(function(req, res) {
 
 			var skip = parseInt(req.params.skip),
@@ -16,7 +16,7 @@ module.exports = function(router) {
 
 			console.log('GET: /worlds/%s/%s', skip, limit);
 
-			GridMap.Worlds(data)
+			World.Worlds(data)
 				.then(routeUtils.sendResponseTo(res, 200))
 				.catch(routeUtils.sendErrorTo(res, 422))
 				.finally(routeUtils.answerEnd());
@@ -33,7 +33,7 @@ module.exports = function(router) {
 				world = req.body.world;
 			var data = {seed: seed, size: size, world: world};
 
-			GridMap.generateNewMap(data)
+			World.generateNewMap(data)
 				.then(routeUtils.sendResponseTo(res, 201))
 				.catch(routeUtils.sendErrorTo(res, 422))
 				.finally(routeUtils.answerEnd());

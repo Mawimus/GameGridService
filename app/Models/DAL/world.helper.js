@@ -1,25 +1,25 @@
 var mongoose = require('mongoose');
-var GridMap = require('./../gridMap.model.js');
+var World = require('./../world.model.js');
 
 exports.findById = function(id, next) {
-	GridMap.findOne({'_id': id})
+	World.findOne({'_id': id})
 		.select('_id token seed size world')
 		.exec(next);
 }
 
 exports.findByWorldName = function(worldName, next) {
-	GridMap.findOne({'world.name': worldName})
+	World.findOne({'world.name': worldName})
 		.select('_id token seed size world')
 		.exec(next);
 }
 
 exports.count = function(next) {
-	GridMap.count()
+	World.count()
 		.exec(next);
 }
 
 exports.list = function(skip, limit, next) {
-	GridMap.find()
+	World.find()
 		.select('_id token seed size world')
 		.skip(skip)
 		.limit(limit)
@@ -30,6 +30,6 @@ exports.list = function(skip, limit, next) {
 		.exec(next);
 }
 
-exports.save = function(gridmap, next) {
-	gridmap.save(next);
+exports.save = function(world, next) {
+	world.save(next);
 }

@@ -12,7 +12,7 @@ exports.getByConnection = function(data) {
 	console.log();
 
 	var deferred = Q.defer();
-	var params = {login: data.login, password: data.password};
+	var params = {login: data.login, password: data.password, worldId: data.worldId};
 
 	PlayerHelper.findByCredential(params, function(err, doc) {
 		if (err) deferred.reject(err);
@@ -36,6 +36,7 @@ exports.create = function(data) {
 	if (typeof data.login !== 'undefined') player.login = data.login;
 	if (typeof data.pseudo !== 'undefined') player.pseudo = data.pseudo;
 	if (typeof data.password !== 'undefined') player.password = data.password;
+	if (typeof data.worldId !== 'undefined') player.worldId = data.worldId;
 
 	PlayerHelper.save(player, function(err, doc) {
 		if (err) deferred.reject(err);

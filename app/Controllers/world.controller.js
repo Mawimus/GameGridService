@@ -2,8 +2,8 @@ var mongoose = require('mongoose');
 var _ = require('lodash');
 var Q = require('q');
 
-var GridmapModel = require('./../../app/Models/gridMap.model.js');
-var GridmapHelper = require('./../../app/Models/DAL/gridMap.helper.js');
+var WorldModel = require('./../../app/Models/world.model.js');
+var WorldHelper = require('./../../app/Models/DAL/world.helper.js');
 var TilesController = require('./../../app/Controllers/tiles.controller.js');
 
 
@@ -13,13 +13,13 @@ exports.generateNewMap = function(data) {
 	console.log();
 
 	var deferred = Q.defer();
-	var gridmap = new GridmapModel();
+	var world = new WorldModel();
 
-	if (typeof data.seed !== 'undefined') gridmap.seed = data.seed;
-	if (typeof data.size !== 'undefined') gridmap.size = data.size;
-	if (typeof data.world !== 'undefined') gridmap.world = data.world;
+	if (typeof data.seed !== 'undefined') world.seed = data.seed;
+	if (typeof data.size !== 'undefined') world.size = data.size;
+	if (typeof data.world !== 'undefined') world.world = data.world;
 
-	GridmapHelper.save(gridmap, function(err, doc) {
+	WorldHelper.save(world, function(err, doc) {
 		if (err) deferred.reject(err);
 		else {
 			TilesController.generateTilesForMap(doc)
@@ -42,7 +42,7 @@ exports.Worlds = function(data) {
 
 	var deferred = Q.defer();
 
-	GridmapHelper.list(data.skip, data.limit, function(err, col) {
+	WorldHelper.list(data.skip, data.limit, function(err, col) {
 		if (err) deferred.reject(err);
 		else deferred.resolve(col);
 	});

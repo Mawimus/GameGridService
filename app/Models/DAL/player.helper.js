@@ -10,7 +10,8 @@ exports.findById = function(id, next) {
 exports.findByCredential = function(data, next) {
 	Player.findOne({
 			login: data.login,
-			password: data.password
+			password: data.password,
+			worldId: data.worldId
 		})
 		.select('_id email pseudo login')
 		.exec(next);

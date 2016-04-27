@@ -5,16 +5,18 @@ var routeUtils = require('../../app/Routes/route.utils');
 var Players = require('../../app/Controllers/players.controller');
 
 module.exports = function(router) {
-router.route('/user/')
+router.route('/user/:worldid/')
 	.post(function(req, res) {
-		console.log('POST: /user/');
-		console.log(req.body);
 
-		var email = req.body.email,
+		var worldId = req.params.worldid,
+			email = req.body.email,
 			login = req.body.login,
 			pseudo = req.body.pseudo,
 			hashpassword = req.body.password;
-		var data = {email: email, login: login, pseudo: pseudo, password: hashpassword};
+		var data = {email: email, login: login, pseudo: pseudo, password: hashpassword, worldId: worldId};
+
+		console.log('POST: /user/%s/', worldId);
+		console.log(req.body);
 
 		Players.create(data)
 			.then(routeUtils.sendResponseTo(res, 201))
@@ -22,14 +24,16 @@ router.route('/user/')
 			.finally(routeUtils.answerEnd());
 	});
 
-router.route('/user/connect/')
+router.route('/user/connect/:worldid/')
 	.post(function(req, res) {
-		console.log('POST: /user/connect/');
-		console.log(req.body);
 
-		var login = req.body.login,
+		var worldId = req.params.worldid,
+			login = req.body.login,
 			hashpassword = req.body.password;
-		var data = {login: login, password: hashpassword};
+		var data = {login: login, password: hashpassword, worldId: worldId};
+
+		console.log('POST: /user/connect/%s/', worldId);
+		console.log(req.body);
 
 		Players.getByConnection(data)
 			.then(routeUtils.sendResponseTo(res, 200))

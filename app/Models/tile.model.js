@@ -7,10 +7,10 @@ var Schema = mongoose.Schema;
  * Tile Schema
  */
 var TileSchema = new Schema({
-	gridMapId: {
+	worldId: {
 		type: Schema.ObjectId,
-		ref: 'GridMap',
-		required: 'A GridMap identification is mandatory'
+		ref: 'World',
+		required: 'A world identification is mandatory'
 	},
 	coord: {
 		x: {

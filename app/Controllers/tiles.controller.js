@@ -7,34 +7,34 @@ var utils = require('./../../app/Core/Utils/utils');
 
 var TileModel = require('./../../app/Models/tile.model.js');
 var TileHelper = require('./../../app/Models/DAL/tile.helper.js');
-var GridmapHelper = require('./../../app/Models/DAL/gridMap.helper.js');
-var GridMapController = require('./../../app/Controllers/gridMap.controller.js')
+var WorldHelper = require('./../../app/Models/DAL/world.helper.js');
+//var WorldController = require('./../../app/Controllers/world.controller.js')
 
-exports.generateTilesForMap = function(gridmap) {
-	// return function(gridmap) {
+exports.generateTilesForMap = function(world) {
+	// return function(world) {
 		var deferred = Q.defer();
-		//var gridmap = gridmap[0]; // le gridmap retourné est un tableau
+		//var world = world[0]; // le world retourné est un tableau
 
 		console.log('------------------------------');
 		console.log('generateTilesForMap');
-		console.log('gridmap: ', gridmap);
-		console.log('gridmap.size: ', gridmap.size);
+		console.log('world: ', world);
+		console.log('world.size: ', world.size);
 		console.log();
 
 		// Création des tuiles associées à la carte
-		gridMapMinx = gridmap.size.minx;
-		gridMapMiny = gridmap.size.miny;
-		gridMapMaxx = gridmap.size.maxx;
-		gridMapMaxy = gridmap.size.maxy;
+		worldMinx = world.size.minx;
+		worldMiny = world.size.miny;
+		worldMaxx = world.size.maxx;
+		worldMaxy = world.size.maxy;
 
-		for (var j = gridMapMiny; j <= gridMapMaxy; j++) {
-			for (var i = gridMapMinx; i <= gridMapMaxx; i++) {
+		for (var j = worldMiny; j <= worldMaxy; j++) {
+			for (var i = worldMinx; i <= worldMaxx; i++) {
 				var tile = new TileModel();
-				tile.gridMapId = gridmap._id;
+				tile.worldId = world._id;
 				tile.coord.x = i;
 				tile.coord.y = j;
-				tile.owner = generateOwnerByTile(gridmap.seed, tile.coord);
-				tile.field = generateFieldByTile(gridmap.seed, tile.coord);
+				tile.owner = generateOwnerByTile(world.seed, tile.coord);
+				tile.field = generateFieldByTile(world.seed, tile.coord);
 
 				TileHelper.save(tile, function(err, doc) {
 					if (err) deferred.reject(err);
@@ -42,7 +42,7 @@ exports.generateTilesForMap = function(gridmap) {
 			}
 		}
 
-		deferred.resolve(gridmap);
+		deferred.resolve(world);
 		return deferred.promise;
 	// }
 }
@@ -57,7 +57,7 @@ exports.getLocalWorldTiles = function(data) {
 
 	var deferred = Q.defer();
 
-	GridmapHelper.findById(data.worldId, function(err, doc) {
+	WorldHelper.findById(data.worldId, function(err, doc) {
 		if (err) deferred.reject(err);
 		else {
 			getLocalTilesByWorld(doc, data)

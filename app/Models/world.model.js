@@ -8,7 +8,7 @@ var Schema = mongoose.Schema;
 /**
  * Tile Schema
  */
-var GridMapSchema = new Schema({
+var WorldSchema = new Schema({
 	created: {
 		type: Date,
 		default: Date.now
@@ -68,10 +68,10 @@ var GridMapSchema = new Schema({
 	}
 });
 
-GridMapSchema.index({token: 1}, {unique: true});
-GridMapSchema.index({'world.name': 1}, {unique: true});
+WorldSchema.index({token: 1}, {unique: true});
+WorldSchema.index({'world.name': 1}, {unique: true});
 
-module.exports = mongoose.model('GridMap', GridMapSchema);
+module.exports = mongoose.model('World', WorldSchema);
 
 // Format d'une carte
 /*
