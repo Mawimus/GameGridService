@@ -3,7 +3,7 @@ var Player = require('./../player.model.js');
 
 exports.findById = function(id, next) {
 	Player.findOne({'_id': id})
-		.select('_id email pseudo login')
+		.select('_id email pseudo login worldId nation')
 		.exec(next);
 }
 
@@ -13,7 +13,7 @@ exports.findByCredential = function(data, next) {
 			password: data.password,
 			worldId: data.worldId
 		})
-		.select('_id email pseudo login')
+		.select('_id email pseudo login worldId nation')
 		.exec(next);
 }
 
@@ -24,7 +24,7 @@ exports.count = function(next) {
 
 exports.list = function(skip, limit, next) {
 	Player.find()
-		.select('_id email pseudo login')
+		.select('_id email pseudo login worldId nation')
 		.skip(skip)
 		.limit(limit)
 		.sort({

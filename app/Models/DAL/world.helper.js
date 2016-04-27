@@ -40,9 +40,11 @@ exports.save = function(world, next) {
 exports.delete = function(id, next) {
 	World.findOne({'_id': id})
 		.remove()
-		.exec(function(err, world) {
-			TileHelper.deleteByWorld(id, function(err, doc) {
-				PlayerHelper.deleteByWorld(id, next);
+		.exec(function(err, doc) {
+			TileHelper.deleteByWorld(id, function() {
+				PlayerHelper.deleteByWorld(id, function() {
+					next(err, doc);
+				});
 			});
 		});
 }
