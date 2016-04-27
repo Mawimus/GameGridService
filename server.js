@@ -47,6 +47,7 @@ router.route('/')
 
 require('./app/Routes/player.route')(router);
 require('./app/Routes/tile.route')(router);
+require('./app/Routes/admin.route')(router);
 
 // REGISTER OUR ROUTES -------------------------------
 // all of our routes will be prefixed with /api

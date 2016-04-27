@@ -37,3 +37,9 @@ exports.list = function(skip, limit, next) {
 exports.save = function(player, next) {
 	player.save(next);
 }
+
+exports.deleteByWorld = function(worldId, next) {
+	Player.find({worldId: worldId})
+		.remove()
+		.exec(next);
+}

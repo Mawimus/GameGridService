@@ -49,3 +49,9 @@ exports.listByWorldId = function(worldId, skip, limit, next) {
 exports.save = function(tile, next) {
 	tile.save(next);
 }
+
+exports.deleteByWorld = function(worldId, next) {
+	Tile.find({worldId: worldId})
+		.remove()
+		.exec(next);
+}

@@ -13,6 +13,11 @@ var WorldSchema = new Schema({
 		type: Date,
 		default: Date.now
 	},
+	finished: {
+		type: Boolean,
+		default: false,
+		required: 'World finished is mandatory'
+	},
 	token: {
 		type: String,
 		default: function() {return uuid.raw()},

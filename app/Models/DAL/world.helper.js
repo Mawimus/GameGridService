@@ -1,6 +1,9 @@
 var mongoose = require('mongoose');
 var World = require('./../world.model.js');
 
+var TileHelper = require('./tile.helper.js');
+var PlayerHelper = require('./player.helper.js');
+
 exports.findById = function(id, next) {
 	World.findOne({'_id': id})
 		.select('_id token seed size world')
@@ -32,4 +35,14 @@ exports.list = function(skip, limit, next) {
 
 exports.save = function(world, next) {
 	world.save(next);
+}
+
+exports.delete = function(id, next) {
+	World.findOne({'_id': id})
+		.remove()
+		.exec(function(err, world) {
+			TileHelper.deleteByWorld(id, function(err, doc) {
+				PlayerHelper.deleteByWorld(id, next);
+			});
+		});
 }
